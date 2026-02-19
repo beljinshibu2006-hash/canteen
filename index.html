@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GCE Tirunelveli – Canteen + Admin Control</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Mukta:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --green: #1a5c2a;
+        --green-light: #2e8b45;
+        --gold: #e8a020;
+        --cream: #fdf6e3;
+        --white: #fff;
+        --red: #c0392b;
+        --aavin-blue: #1a3a6b;
+        --aavin-red: #c0392b;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+        --dashboard-bg: #f4f2e9;
+        --online-green: #27ae60;
+        --people-blue: #2980b9;
+        --admin-panel: #2c3e50;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--cream);
+        font-family: "Mukta", sans-serif;
+        color: #222;
+        min-height: 100vh;
+      }
+      /* HEADER */
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--green) 60%,
+          var(--green-light) 100%
+        );
+        color: var(--white);
+        text-align: center;
+        padding: 36px 20px 28px;
+        position: relative;
+        overflow: hidden;
+      }
+      header::before {
+        content: "";
+        position: absolute;
+        top: -40px;
+        left: -40px;
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+      }
+      header::after {
+        content: "";
+        position: absolute;
+        bottom: -60px;
+        right: -30px;
+        width: 220px;
+        height: 220px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 50%;
+      }
+      .college-name {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(1.4rem, 4vw, 2.2rem);
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+      .canteen-tag {
+        display: inline-block;
+        margin-top: 8px;
+        background: var(--gold);
+        color: var(--green);
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 4px 20px;
+        border-radius: 20px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+      .sub-info {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        opacity: 0.85;
+        letter-spacing: 0.5px;
+      }
+
+      /* ADMIN LOGIN BAR / TOGGLE */
+      .admin-toolbar {
+        background: #1e2b38;
+        padding: 10px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 20px;
+        border-bottom: 1px solid var(--gold);
+        font-size: 0.95rem;
+      }
+      .admin-login-btn {
+        background: var(--gold);
+        border: none;
+        color: #1e2b38;
+        font-weight: 700;
+        padding: 6px 20px;
+        border-radius: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .admin-panel {
+        display: none;
+        background: #24425e;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 0 0 16px 16px;
+        margin: 0 20px 10px 20px;
+        box-shadow: var(--shadow);
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 20px;
+        border-left: 4px solid var(--gold);
+      }
+      .admin-panel.visible {
+        display: flex;
+      }
+      .admin-panel input,
+      .admin-panel select {
+        padding: 8px 12px;
+        border-radius: 30px;
+        border: none;
+        font-family: "Mukta", sans-serif;
+        background: #ecf0f1;
+        min-width: 140px;
+      }
+      .admin-panel button {
+        background: var(--gold);
+        border: none;
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .admin-panel .danger {
+        background: #c0392b;
+        color: white;
+      }
+      .login-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .login-box {
+        background: var(--cream);
+        padding: 30px;
+        border-radius: 28px;
+        width: 300px;
+        box-shadow: 0 20px 40px black;
+      }
+      .login-box h3 {
+        margin-bottom: 20px;
+        color: var(--green);
+      }
+      .login-box input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 40px;
+        border: 1px solid #aaa;
+      }
+      .login-box button {
+        background: var(--green);
+        color: white;
+        border: none;
+        padding: 10px;
+        width: 100%;
+        border-radius: 40px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .close-login {
+        float: right;
+        cursor: pointer;
+        font-size: 1.4rem;
+      }
+
+      /* DASHBOARD BAR */
+      .dashboard-bar {
+        background: #2c3e50;
+        background: linear-gradient(145deg, #1e2b38 0%, #2c3e50 100%);
+        padding: 18px 24px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        box-shadow: 0 -2px 0 var(--gold), 0 8px 18px rgba(0, 0, 0, 0.15);
+        color: #ecf0f1;
+        border-bottom: 3px solid var(--gold);
+      }
+      .dashboard-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 8px 22px 8px 18px;
+        border-radius: 60px;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 215, 0, 0.25);
+        flex-wrap: wrap;
+      }
+      .dashboard-item .label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #bdc3c7;
+      }
+      .dashboard-item .value {
+        font-family: "Playfair Display", serif;
+        font-size: 1.9rem;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--gold);
+      }
+      .sub-value {
+        font-size: 0.9rem;
+        color: #e0e0e0;
+        margin-left: 4px;
+      }
+      .gpay-badge {
+        background: #1e8449;
+        color: white;
+        padding: 6px 22px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .people-count-main {
+        font-size: 2.4rem;
+        font-weight: 900;
+        color: var(--gold);
+      }
+      .updated-at {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-left: 10px;
+      }
+      .demo-controls {
+        display: flex;
+        gap: 6px;
+        margin-left: 10px;
+      }
+      .demo-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        cursor: pointer;
+      }
+
+      /* TABS */
+      .tab-bar {
+        display: flex;
+        overflow-x: auto;
+        background: var(--green);
+        border-bottom: 3px solid var(--gold);
+        padding: 0 10px;
+      }
+      .tab-btn {
+        flex: 0 0 auto;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        font-family: "Mukta", sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        padding: 12px 22px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -3px;
+        transition: 0.2s;
+        white-space: nowrap;
+      }
+      .tab-btn.active,
+      .tab-btn:hover {
+        color: var(--gold);
+        border-bottom-color: var(--gold);
+      }
+
+      /* MAIN */
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 30px 16px 60px;
+      }
+      .section {
+        display: none;
+        animation: fadeIn 0.35s ease;
+      }
+      .section.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .section-title {
+        font-family: "Playfair Display", serif;
+        font-size: 1.7rem;
+        color: var(--green);
+        border-left: 5px solid var(--gold);
+        padding-left: 14px;
+        margin-bottom: 22px;
+      }
+
+      /* MENU GRID */
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+        margin-bottom: 36px;
+      }
+      .menu-card {
+        background: var(--white);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 18px 20px;
+        border-top: 4px solid var(--green-light);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        transition: 0.18s;
+      }
+      .menu-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+      }
+      .menu-card.veg {
+        border-top-color: var(--green-light);
+      }
+      .menu-card.snack {
+        border-top-color: var(--gold);
+      }
+      .menu-card.drink {
+        border-top-color: #2980b9;
+      }
+      .menu-card.aavin {
+        border-top-color: var(--aavin-blue);
+      }
+      .item-info {
+        flex: 1;
+      }
+      .item-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+      }
+      .item-desc {
+        font-size: 0.82rem;
+        color: #666;
+        margin-top: 3px;
+      }
+      .item-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 1px 8px;
+        margin-top: 6px;
+        text-transform: uppercase;
+      }
+      .badge-veg {
+        background: #e8f5e9;
+        color: var(--green);
+      }
+      .badge-bestseller {
+        background: #fff3e0;
+        color: #e65100;
+      }
+      .badge-aavin {
+        background: #e3eaf6;
+        color: var(--aavin-blue);
+      }
+      .price {
+        font-family: "Playfair Display", serif;
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: var(--green);
+        white-space: nowrap;
+        min-width: 52px;
+        text-align: right;
+      }
+      .price span {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #888;
+        display: block;
+      }
+      .admin-edit {
+        margin-top: 8px;
+        display: flex;
+        gap: 6px;
+      }
+      .admin-edit button {
+        background: #ecf0f1;
+        border: none;
+        border-radius: 20px;
+        padding: 2px 8px;
+        font-size: 0.7rem;
+        cursor: pointer;
+      }
+
+      /* AAVIN BANNER etc */
+      .aavin-banner {
+        background: linear-gradient(120deg, var(--aavin-blue) 0%, #2c5faa 100%);
+        border-radius: 16px;
+        color: var(--white);
+        padding: 24px 28px;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+      }
+      .aavin-logo {
+        font-family: "Playfair Display", serif;
+        font-size: 2.6rem;
+        font-weight: 900;
+        color: #fff;
+        background: var(--aavin-red);
+        border-radius: 12px;
+        width: 72px;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .timing-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--white);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        margin-top: 10px;
+      }
+      .timing-table th {
+        background: var(--green);
+        color: white;
+        padding: 12px 18px;
+        text-align: left;
+      }
+      .timing-table td {
+        padding: 11px 18px;
+        border-bottom: 1px solid #f0ede4;
+      }
+      .notice {
+        background: #fff9e6;
+        border-left: 4px solid var(--gold);
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin-top: 24px;
+      }
+      footer {
+        text-align: center;
+        background: var(--green);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 18px;
+        font-size: 0.82rem;
+      }
+      footer strong {
+        color: var(--gold);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="college-name">
+        Government College of Engineering, Tirunelveli
+      </div>
+      <div class="canteen-tag">🍽️ Canteen + Admin Control</div>
+      <div class="sub-info">
+        Serving freshly prepared food • Affiliated to Anna University
+      </div>
+    </header>
+
+    <!-- Admin login bar -->
+    <div class="admin-toolbar">
+      <span style="color: #ecf0f1">🛠️ Admin</span>
+      <button class="admin-login-btn" id="adminLoginBtn">
+        🔐 Login to edit items
+      </button>
+    </div>
+
+    <!-- Admin panel (visible only after login) -->
+    <div id="adminPanel" class="admin-panel">
+      <select id="sectionSelect">
+        <option value="breakfast">Breakfast</option>
+        <option value="lunch">Lunch</option>
+        <option value="snacks">Snacks</option>
+        <option value="aavin">Aavin</option>
+      </select>
+      <input
+        type="text"
+        id="itemName"
+        placeholder="Item name"
+        value="New item"
+      />
+      <input
+        type="text"
+        id="itemDesc"
+        placeholder="Description"
+        value="Tasty fresh"
+      />
+      <input
+        type="text"
+        id="itemPrice"
+        placeholder="Price (e.g. ₹45)"
+        value="₹45"
+      />
+      <select id="itemType">
+        <option value="veg">Veg</option>
+        <option value="snack">Snack</option>
+        <option value="drink">Drink</option>
+        <option value="aavin">Aavin</option>
+      </select>
+      <button id="addItemBtn">➕ Add item</button>
+      <button id="logoutAdmin" class="danger">🚪 Logout</button>
+    </div>
+
+    <!-- Login overlay -->
+    <div id="loginOverlay" class="login-overlay">
+      <div class="login-box">
+        <span class="close-login" id="closeLogin">&times;</span>
+        <h3>Admin login</h3>
+        <input type="password" id="adminPass" placeholder="Enter password" />
+        <button id="submitLogin">Login</button>
+        <p style="font-size: 0.8rem; margin-top: 10px">(use: admin123)</p>
+      </div>
+    </div>
+
+    <!-- Dashboard bar -->
+    <div class="dashboard-bar">
+      <div class="dashboard-item">
+        <span class="label">👥 PEOPLE</span>
+        <div class="people-counter">
+          <span class="people-count-main" id="peopleCountDisplay">38</span
+          ><span class="sub-value">/80</span>
+        </div>
+        <div class="demo-controls">
+          <button class="demo-btn" id="incPeople">+3</button
+          ><button class="demo-btn" id="decPeople">-2</button
+          ><button class="demo-btn" id="resetPeople">reset</button>
+        </div>
+        <span class="updated-at" id="lastUpdatedPeople">now</span>
+      </div>
+      <div class="dashboard-item">
+        <span class="label">📱 GPAY</span>
+        <div class="gpay-badge" id="gpayStatus"><span>✅</span> ACTIVE</div>
+        <div>
+          <button class="demo-btn" id="setGpayOn">ON</button
+          ><button class="demo-btn" id="setGpayOff">OFF</button>
+        </div>
+      </div>
+      <div class="dashboard-item">
+        <span class="label">🍽️ SOLD</span
+        ><span class="value" id="mealsSold">126</span
+        ><span class="sub-value">lunch</span
+        ><button class="demo-btn" id="incMeals">+1</button>
+      </div>
+      <div class="dashboard-item">
+        <span class="label">⭐ AAVIN</span
+        ><span class="value" id="aavinStock">98%</span
+        ><span class="sub-value">fresh</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showTab('breakfast')">
+        ☀️ Breakfast
+      </button>
+      <button class="tab-btn" onclick="showTab('lunch')">🍛 Lunch</button>
+      <button class="tab-btn" onclick="showTab('snacks')">🥪 Snacks</button>
+      <button class="tab-btn" onclick="showTab('aavin')">🥛 Aavin</button>
+      <button class="tab-btn" onclick="showTab('timing')">⏰ Timings</button>
+    </div>
+
+    <main id="mainContent">
+      <!-- Sections will be populated dynamically by javascript -->
+    </main>
+
+    <footer>
+      <strong>GCE Tirunelveli</strong> — Canteen with live admin edit • Prices
+      indicative 🌿
+    </footer>
+
+    <script>
+      (function () {
+        // ---------- DATA STORE (initial pure veg menu) ----------
+        const menuData = {
+          breakfast: [
+            {
+              name: "Idli (2 Pcs)",
+              desc: "Soft steamed rice cakes with sambar & chutney",
+              price: "₹15",
+              type: "veg",
+              bestseller: true,
+            },
+            {
+              name: "Dosa",
+              desc: "Crispy plain dosa with coconut chutney & sambar",
+              price: "₹20",
+              type: "veg",
+            },
+            {
+              name: "Pongal",
+              desc: "Savoury rice & lentil porridge with ghee & pepper",
+              price: "₹20",
+              type: "veg",
+            },
+            {
+              name: "Poori (2 Pcs)",
+              desc: "Puffed fried bread with masala kurma",
+              price: "₹25",
+              type: "veg",
+            },
+            {
+              name: "Chapati (2 Pcs)",
+              desc: "Whole wheat flatbread with dhal or kurma",
+              price: "₹20",
+              type: "veg",
+            },
+            {
+              name: "Tea / Coffee",
+              desc: "Hot freshly brewed filter coffee or ginger tea",
+              price: "₹10",
+              type: "drink",
+            },
+            {
+              name: "Onion Uttapam",
+              desc: "Thick rice pancake with onions & tomatoes",
+              price: "₹25",
+              type: "veg",
+            },
+          ],
+          lunch: [
+            {
+              name: "Veg Meals (Full)",
+              desc: "Rice, sambar, rasam, 2 veg curries, papad, pickle & curd",
+              price: "₹50",
+              type: "veg",
+              bestseller: true,
+            },
+            {
+              name: "Paneer Meals",
+              desc: "Rice, sambar, rasam, paneer curry, curd & papad",
+              price: "₹70",
+              type: "veg",
+              bestseller: true,
+            },
+            {
+              name: "Sambar Rice",
+              desc: "Mixed rice with thick tangy sambar",
+              price: "₹30",
+              type: "veg",
+            },
+            {
+              name: "Curd Rice",
+              desc: "Cooling curd rice with tempering & pickle",
+              price: "₹25",
+              type: "veg",
+            },
+            {
+              name: "Lemon Rice",
+              desc: "Tangy lemon-flavoured rice with groundnuts",
+              price: "₹25",
+              type: "veg",
+            },
+            {
+              name: "Tomato Rice",
+              desc: "Spiced tomato-based flavoured rice",
+              price: "₹25",
+              type: "veg",
+            },
+            {
+              name: "Veg Biryani",
+              desc: "Aromatic rice with mixed vegetables & raita",
+              price: "₹45",
+              type: "veg",
+              bestseller: true,
+            },
+            {
+              name: "Extra Rice / Sambar",
+              desc: "Add-on for existing meal plate",
+              price: "₹10",
+              type: "veg",
+            },
+          ],
+          snacks: [
+            {
+              name: "Vada (2 Pcs)",
+              desc: "Crispy urad dhal fritters with chutney",
+              price: "₹15",
+              type: "snack",
+              bestseller: true,
+            },
+            {
+              name: "Bajji (5 Pcs)",
+              desc: "Battered & fried onion / plantain / chilli bajji",
+              price: "₹20",
+              type: "snack",
+            },
+            {
+              name: "Bonda (3 Pcs)",
+              desc: "Crispy potato bonda with green chutney",
+              price: "₹15",
+              type: "snack",
+            },
+            {
+              name: "Veg Puff Pastry",
+              desc: "Flaky puff pastry with spiced vegetable filling",
+              price: "₹15",
+              type: "snack",
+            },
+            {
+              name: "Murukku / Mixture",
+              desc: "Traditional South Indian crunchy snacks",
+              price: "₹10",
+              type: "snack",
+            },
+            {
+              name: "Veg Noodles",
+              desc: "Stir-fried veg noodles with soy sauce & veggies",
+              price: "₹35",
+              type: "snack",
+            },
+            {
+              name: "Soft Drinks / Water",
+              desc: "Packaged water bottles & chilled soft drinks",
+              price: "₹10–25",
+              type: "drink",
+            },
+            {
+              name: "Samosa (2 Pcs)",
+              desc: "Crispy pastry stuffed with spiced potatoes & peas",
+              price: "₹20",
+              type: "snack",
+              bestseller: true,
+            },
+          ],
+          aavin: [
+            {
+              name: "Aavin Full Cream Milk",
+              desc: "Fresh full-fat milk – 200 ml",
+              price: "₹12",
+              type: "aavin",
+            },
+            {
+              name: "Aavin Toned Milk",
+              desc: "Low-fat milk – 200 ml",
+              price: "₹10",
+              type: "aavin",
+            },
+            {
+              name: "Aavin Lassi",
+              desc: "Sweet / salted lassi – 200 ml",
+              price: "₹20",
+              type: "aavin",
+              bestseller: true,
+            },
+            {
+              name: "Aavin Butter Milk (Mor)",
+              desc: "Cool spiced buttermilk – 200 ml",
+              price: "₹10",
+              type: "aavin",
+              bestseller: true,
+            },
+            {
+              name: "Aavin Flavoured Milk",
+              desc: "Chocolate / Rose / Badam – 200 ml",
+              price: "₹25",
+              type: "aavin",
+            },
+            {
+              name: "Aavin Curd (Thayir)",
+              desc: "Fresh set curd – 100 g cup",
+              price: "₹15",
+              type: "aavin",
+            },
+            {
+              name: "Aavin Ice Cream",
+              desc: "Vanilla, Strawberry & Mango cup",
+              price: "₹20",
+              type: "aavin",
+              bestseller: true,
+            },
+            {
+              name: "Aavin Paneer",
+              desc: "Fresh cottage cheese – 100 g",
+              price: "₹40",
+              type: "aavin",
+            },
+            {
+              name: "Aavin Butter",
+              desc: "Salted / unsalted – 100 g",
+              price: "₹30",
+              type: "aavin",
+            },
+          ],
+        };
+
+        // ---------- RENDER FUNCTION ----------
+        function renderAllSections() {
+          const main = document.getElementById("mainContent");
+          main.innerHTML = ""; // rebuild sections
+
+          // create section divs
+          const sections = ["breakfast", "lunch", "snacks", "aavin", "timing"];
+          sections.forEach((id) => {
+            const sectionDiv = document.createElement("div");
+            sectionDiv.id = id;
+            sectionDiv.className =
+              "section" + (id === "breakfast" ? " active" : "");
+            main.appendChild(sectionDiv);
+          });
+
+          // render breakfast
+          const breakfastDiv = document.getElementById("breakfast");
+          breakfastDiv.innerHTML = `<div class="section-title">Morning Breakfast</div><div class="menu-grid" id="grid-breakfast"></div>`;
+          fillGrid("breakfast", menuData.breakfast);
+
+          // lunch
+          const lunchDiv = document.getElementById("lunch");
+          lunchDiv.innerHTML = `<div class="section-title">Afternoon Lunch (Pure Veg)</div><div class="menu-grid" id="grid-lunch"></div>`;
+          fillGrid("lunch", menuData.lunch);
+
+          // snacks
+          const snacksDiv = document.getElementById("snacks");
+          snacksDiv.innerHTML = `<div class="section-title">Evening Snacks & Bites (Veg)</div><div class="menu-grid" id="grid-snacks"></div>`;
+          fillGrid("snacks", menuData.snacks);
+
+          // aavin
+          const aavinDiv = document.getElementById("aavin");
+          aavinDiv.innerHTML = `<div class="aavin-banner"><div class="aavin-logo">Aa</div><div class="aavin-info"><h3>Aavin Milk & Dairy Products</h3><p>Aavin products fresh daily, directly from Tamil Nadu farmers.</p></div></div><div class="section-title">Aavin Products</div><div class="menu-grid" id="grid-aavin"></div><div class="notice"><strong>📌 Note:</strong> Restocked fresh every morning.</div>`;
+          fillGrid("aavin", menuData.aavin);
+
+          // timing (static, not editable)
+          const timingDiv = document.getElementById("timing");
+          timingDiv.innerHTML = `<div class="section-title">Canteen Operating Hours</div>${timingHTML()}`;
+        }
+
+        function timingHTML() {
+          return `<table class="timing-table"><thead><tr><th>Session</th><th>Timings</th><th>Items</th></tr></thead><tbody>
+          <tr><td>Early Morning</td><td>7:00–8:30</td><td>Tea, Idli, Dosa, Pongal, Aavin Milk</td></tr>
+          <tr><td>Morning Break</td><td>10:30–11:15</td><td>Snacks, Tea, Coffee, Aavin</td></tr>
+          <tr><td>Lunch</td><td>12:30–2:00</td><td>Full Veg Meals, Paneer Meals, Rice items</td></tr>
+          <tr><td>Evening Break</td><td>3:45–4:30</td><td>Bajji, Bonda, Vada, Samosa, Lassi</td></tr>
+          <tr><td>Extended</td><td>4:30–6:00</td><td>Light snacks, Aavin products</td></tr>
+        </tbody></table>`;
+        }
+
+        function fillGrid(sectionId, items) {
+          const grid = document.getElementById(`grid-${sectionId}`);
+          if (!grid) return;
+          grid.innerHTML = "";
+          items.forEach((item, index) => {
+            const card = document.createElement("div");
+            card.className = `menu-card ${item.type}`;
+            let badgeHtml = "";
+            if (
+              item.type === "veg" ||
+              item.type === "snack" ||
+              item.type === "aavin"
+            ) {
+              badgeHtml += `<span class="item-badge badge-veg">✅ Veg</span>`;
+            } else if (item.type === "drink") {
+              badgeHtml += `<span class="item-badge" style="background:#e0f2fe;color:#0369a1;">☕ Drink</span>`;
+            }
+            if (item.bestseller) {
+              badgeHtml += `<span class="item-badge badge-bestseller">⭐ Bestseller</span>`;
+            }
+            // admin controls (only visible if logged in)
+            const adminControls = isAdmin
+              ? `<div class="admin-edit">
+              <button class="demo-btn" onclick="editItem('${sectionId}',${index})">✏️</button>
+              <button class="demo-btn" onclick="deleteItem('${sectionId}',${index})">🗑️</button>
+            </div>`
+              : "";
+
+            card.innerHTML = `
+            <div class="item-info">
+              <div class="item-name">${item.name}</div>
+              <div class="item-desc">${item.desc}</div>
+              ${badgeHtml}
+              ${adminControls}
+            </div>
+            <div class="price">${item.price}<span>${
+              item.price.includes("–") ? "" : "per unit"
+            }</span></div>
+          `;
+            grid.appendChild(card);
+          });
+        }
+
+        // Admin state
+        let isAdmin = false;
+        window.isAdmin = false; // for inline onclick access
+
+        // expose functions globally for admin edit/delete
+        window.editItem = function (section, idx) {
+          if (!isAdmin) return;
+          const item = menuData[section][idx];
+          document.getElementById("sectionSelect").value = section;
+          document.getElementById("itemName").value = item.name;
+          document.getElementById("itemDesc").value = item.desc;
+          document.getElementById("itemPrice").value = item.price;
+          document.getElementById("itemType").value = item.type || "veg";
+          // delete old then add as new (simplest)
+          menuData[section].splice(idx, 1);
+          renderAllSections();
+          // focus on add (user must click add)
+        };
+
+        window.deleteItem = function (section, idx) {
+          if (!isAdmin) return;
+          menuData[section].splice(idx, 1);
+          renderAllSections();
+        };
+
+        // Add item button
+        document
+          .getElementById("addItemBtn")
+          .addEventListener("click", function () {
+            if (!isAdmin) return;
+            const section = document.getElementById("sectionSelect").value;
+            const name = document.getElementById("itemName").value;
+            const desc = document.getElementById("itemDesc").value;
+            const price = document.getElementById("itemPrice").value;
+            const type = document.getElementById("itemType").value;
+            const newItem = { name, desc, price, type };
+            if (type === "veg" || type === "snack" || type === "aavin")
+              newItem.type = type;
+            menuData[section].push(newItem);
+            renderAllSections();
+          });
+
+        // Login logic
+        const overlay = document.getElementById("loginOverlay");
+        const loginBtn = document.getElementById("adminLoginBtn");
+        const closeLogin = document.getElementById("closeLogin");
+        const submitLogin = document.getElementById("submitLogin");
+        const adminPanel = document.getElementById("adminPanel");
+        const logoutBtn = document.getElementById("logoutAdmin");
+
+        loginBtn.addEventListener(
+          "click",
+          () => (overlay.style.display = "flex")
+        );
+        closeLogin.addEventListener(
+          "click",
+          () => (overlay.style.display = "none")
+        );
+        submitLogin.addEventListener("click", () => {
+          const pass = document.getElementById("adminPass").value;
+          if (pass === "admin123") {
+            isAdmin = true;
+            window.isAdmin = true;
+            overlay.style.display = "none";
+            adminPanel.classList.add("visible");
+            renderAllSections(); // re-render with edit buttons
+          } else {
+            alert("Wrong password (use admin123)");
+          }
+        });
+        logoutBtn.addEventListener("click", () => {
+          isAdmin = false;
+          window.isAdmin = false;
+          adminPanel.classList.remove("visible");
+          renderAllSections(); // remove edit buttons
+        });
+
+        // Dashboard controls (same as before)
+        let peopleCount = 38,
+          mealsSold = 126,
+          gpayActive = true;
+        const peopleSpan = document.getElementById("peopleCountDisplay");
+        const lastUpdated = document.getElementById("lastUpdatedPeople");
+        const gpayDiv = document.getElementById("gpayStatus");
+        const mealsSpan = document.getElementById("mealsSold");
+        const aavinStock = document.getElementById("aavinStock");
+
+        function updateDashboard() {
+          peopleSpan.innerText = peopleCount;
+          const now = new Date();
+          lastUpdated.innerText = `⏱️ ${now.toLocaleTimeString()}`;
+          gpayDiv.innerHTML = gpayActive
+            ? `<span>✅</span> ACTIVE`
+            : `<span>⛔</span> OFFLINE`;
+          gpayDiv.style.background = gpayActive ? "#1e8449" : "#b03a2e";
+          mealsSpan.innerText = mealsSold;
+          aavinStock.innerText = 95 + Math.floor(Math.random() * 5) + "%";
+        }
+        document.getElementById("incPeople").addEventListener("click", () => {
+          if (peopleCount < 80) peopleCount += 3;
+          updateDashboard();
+        });
+        document.getElementById("decPeople").addEventListener("click", () => {
+          if (peopleCount >= 2) peopleCount -= 2;
+          updateDashboard();
+        });
+        document.getElementById("resetPeople").addEventListener("click", () => {
+          peopleCount = 38;
+          updateDashboard();
+        });
+        document.getElementById("setGpayOn").addEventListener("click", () => {
+          gpayActive = true;
+          updateDashboard();
+        });
+        document.getElementById("setGpayOff").addEventListener("click", () => {
+          gpayActive = false;
+          updateDashboard();
+        });
+        document.getElementById("incMeals").addEventListener("click", () => {
+          mealsSold++;
+          updateDashboard();
+        });
+        updateDashboard();
+
+        // Tab switching
+        window.showTab = function (id) {
+          document
+            .querySelectorAll(".section")
+            .forEach((s) => s.classList.remove("active"));
+          document.getElementById(id).classList.add("active");
+          document
+            .querySelectorAll(".tab-btn")
+            .forEach((b) => b.classList.remove("active"));
+          const btnMap = {
+            breakfast: "☀️",
+            lunch: "🍛",
+            snacks: "🥪",
+            aavin: "🥛",
+            timing: "⏰",
+          };
+          document.querySelectorAll(".tab-btn").forEach((b) => {
+            if (b.innerText.includes(btnMap[id])) b.classList.add("active");
+          });
+        };
+
+        // Initial render
+        renderAllSections();
+      })();
+    </script>
+  </body>
+</html>
